@@ -1,5 +1,6 @@
 package com.nnmilestoempty.security;
 
+import com.warrenstrange.googleauth.GoogleAuthenticator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,7 +9,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -26,14 +26,15 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
     private final PasswordEncoder passwordEncoder;
 
     private CustomUserDetailsManager userDetailsManager;
-
+    private GoogleAuthenticator googleAuthenticator;
     private HttpServletRequest request;
 
     @Autowired
     public CustomAuthenticationProvider(CustomUserDetailsManager userDetailsManager, PasswordEncoder passwordEncoder,
-                                        HttpServletRequest request) {
+                                        GoogleAuthenticator googleAuthenticator, HttpServletRequest request) {
         this.userDetailsManager = userDetailsManager;
         this.passwordEncoder = passwordEncoder;
+        this.googleAuthenticator = googleAuthenticator;
         this.request = request;
     }
 
@@ -43,10 +44,10 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         String name = authentication.getName();
         String password = authentication.getCredentials().toString();
 
-        UserDetails userDetails;
+        CustomUserDetails userDetails;
 
         try {
-            userDetails = userDetailsManager.loadUserByUsername(name);
+            userDetails = (CustomUserDetails) userDetailsManager.loadUserByUsername(name);
         } catch (UsernameNotFoundException e) {
             logger.warn("Failed login for unknown user '{}'", name);
             return null;
@@ -56,9 +57,28 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         if (userDetails.isEnabled()) {
             // Check to see if the password matches.
             if (passwordEncoder.matches(password, userDetails.getPassword())) {
-                Collection<? extends GrantedAuthority> grantedAuthorities = userDetails.getAuthorities();
-                result = new UsernamePasswordAuthenticationToken(userDetails, password, grantedAuthorities);
-                logger.warn("Successful login for user '{}' from {}", name, request.getRemoteAddr());
+                // Check to see if this user requires 2-factor authentication
+                if (userDetails.isUsing2FA()) {
+                    // Validate the verification code.
+                    TOTPAuthenticationToken customAuthenticationToken = (TOTPAuthenticationToken) authentication;
+                    int verificationToken = customAuthenticationToken.getOneTimePassword();
+
+                    boolean isVerificationTokenValid =
+                            googleAuthenticator.authorize(userDetails.getSecret2FA(), verificationToken);
+
+                    if (isVerificationTokenValid) {
+                        Collection<? extends GrantedAuthority> grantedAuthorities = userDetails.getAuthorities();
+                        result = new UsernamePasswordAuthenticationToken(userDetails, password, grantedAuthorities);
+                        logger.warn("Successful 2-factor auth login for user '{}' from {}", name,
+                                request.getRemoteAddr());
+                    } else {
+                        logger.warn("Failed 2-factor login for user '{}' from {}", name, request.getRemoteAddr());
+                    }
+                } else {
+                    Collection<? extends GrantedAuthority> grantedAuthorities = userDetails.getAuthorities();
+                    result = new UsernamePasswordAuthenticationToken(userDetails, password, grantedAuthorities);
+                    logger.warn("Successful login for user '{}' from {}", name, request.getRemoteAddr());
+                }
             } else {
                 logger.warn("Failed login for user '{}' from {}", name, request.getRemoteAddr());
             }

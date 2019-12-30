@@ -1,5 +1,6 @@
 package com.nnmilestoempty;
 
+import com.warrenstrange.googleauth.GoogleAuthenticator;
 import org.apache.http.client.HttpClient;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
@@ -51,6 +52,11 @@ public class NNMilesToEmpty {
     @Bean
     public RestTemplate restTemplate(RestTemplateBuilder builder) {
         return builder.build();
+    }
+
+    @Bean
+    public GoogleAuthenticator googleAuthenticator() {
+        return new GoogleAuthenticator();
     }
 
     @Bean

@@ -12,6 +12,8 @@ public class LoginRequest {
     @NotBlank
     private String password;
 
+    private String verificationCode;
+
     public String getUsername() {
         return username;
     }
@@ -26,5 +28,13 @@ public class LoginRequest {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getVerificationCode() {
+        return verificationCode;
+    }
+
+    public void setVerificationCode(String verificationCode) {
+        this.verificationCode = verificationCode;
     }
 }

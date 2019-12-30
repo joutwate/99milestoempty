@@ -59,4 +59,12 @@ public class CustomUserDetails implements UserDetails {
     public boolean isEnabled() {
         return user.isEnabled();
     }
+
+    public boolean isUsing2FA() {
+        return user.isUsing2FA();
+    }
+
+    public String getSecret2FA () {
+        return user.getSecret2FA();
+    }
 }

@@ -1,0 +1,37 @@
+package com.nnmilestoempty.security;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+
+/**
+ * Custom Spring authentication token that supports username, password and a time based one time password.
+ */
+public class TOTPAuthenticationToken extends UsernamePasswordAuthenticationToken {
+
+    private static final Logger logger = LoggerFactory.getLogger(TOTPAuthenticationToken.class);
+
+    private Integer oneTimePassword;
+
+    public TOTPAuthenticationToken(Object principal, Object credentials, String oneTimePassword) {
+        super(principal, credentials);
+
+        // Convert the verification
+        try {
+            this.oneTimePassword = Integer.parseInt(oneTimePassword.replaceAll("\\s+", ""));
+        } catch (NumberFormatException e) {
+            logger.error("Unable to parse 2-factor TOTP verification value to an integer as expected");
+        }
+    }
+
+    public Integer getOneTimePassword() {
+        return oneTimePassword;
+    }
+
+    @Override
+    public void eraseCredentials() {
+        super.eraseCredentials();
+
+        this.oneTimePassword = null;
+    }
+}

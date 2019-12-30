@@ -9,14 +9,16 @@ import com.nnmilestoempty.payload.LoginRequest;
 import com.nnmilestoempty.payload.SignUpRequest;
 import com.nnmilestoempty.repository.auth.RegistrationKeyRepository;
 import com.nnmilestoempty.security.CustomAuthenticationProvider;
+import com.nnmilestoempty.security.TOTPAuthenticationToken;
 import com.nnmilestoempty.security.CustomUserDetails;
 import com.nnmilestoempty.security.CustomUserDetailsManager;
+import com.warrenstrange.googleauth.GoogleAuthenticator;
+import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -39,32 +41,42 @@ public class AuthController {
     private JwtTokenProvider tokenProvider;
     private RegistrationKeyRepository registrationKeyRepository;
     private JavaMailSender mailSender;
+    private GoogleAuthenticator googleAuthenticator;
 
     public AuthController(CustomAuthenticationProvider authenticationProvider,
                           CustomUserDetailsManager userDetailsManager, JwtTokenProvider jwtTokenProvider,
-                          RegistrationKeyRepository registrationKeyRepository, JavaMailSender javaMailSender) {
+                          RegistrationKeyRepository registrationKeyRepository, JavaMailSender javaMailSender,
+                          GoogleAuthenticator googleAuthenticator) {
         this.authenticationProvider = authenticationProvider;
         this.userDetailsManager = userDetailsManager;
         this.tokenProvider = jwtTokenProvider;
         this.registrationKeyRepository = registrationKeyRepository;
         this.mailSender = javaMailSender;
+        this.googleAuthenticator = googleAuthenticator;
     }
 
     @PostMapping(value = "/register", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public ResponseEntity<?> registerUser(@Valid SignUpRequest registrationRequest) {
         // Check to see if username is taken.
         String username = registrationRequest.getUsername().trim();
+        String emailAddress = registrationRequest.getEmail().trim();
         if (userDetailsManager.userExists(username)) {
             return ResponseEntity.badRequest().body("Username is already taken");
         }
 
-        // Create disabled user.
+        // Configure a user.
         Role role = new Role("ROLE_USER");
         User user = new User(registrationRequest.getFirstName().trim(), registrationRequest.getLastName().trim(),
-                registrationRequest.getEmail(), username, registrationRequest.getPassword(), false);
+                emailAddress, username, registrationRequest.getPassword(), false);
         role.setUser(user);
         user.setRoles(Collections.singleton(role));
         UserDetails details = new CustomUserDetails(user);
+
+        // Create a TOTP secret that can be used for two-factor authentication.
+        GoogleAuthenticatorKey googleAuthenticatorKey = googleAuthenticator.createCredentials();
+        user.setSecret2FA(googleAuthenticatorKey.getKey());
+
+        // Create the disabled user.
         userDetailsManager.createUser(details);
 
         // Create a registration key for this user.
@@ -74,11 +86,23 @@ public class AuthController {
         // Send email with unique id that is valid for 10 minutes for user to register.
         // Move this to an asynchronous process
         SimpleMailMessage msg = new SimpleMailMessage();
-        msg.setTo(registrationRequest.getEmail());
+        msg.setTo(emailAddress);
         msg.setFrom("registration@99milestoempty.com");
         msg.setSubject("Welcome!");
-        msg.setText("Hello World \n Spring Boot Email.\n Please verify your account by visiting " +
-                "/api/auth/verifyRegistration/" + registrationToken.getToken());
+        StringBuilder body = new StringBuilder();
+        body.append("Hello World \n Spring Boot Email.\n Please verify your account by visiting " +
+                "/api/auth/verifyRegistration/").append(registrationToken.getToken());
+        body.append("\n\nYour two factor authentication secret is: ").append(user.getSecret2FA());
+        body.append("\nYou can also scan this QR code into Google Authenticator\n");
+        String format = "https://www.google.com/chart?chs=200x200&cht=qr&chl=otpauth://totp/%s:%s?secret=%s&issuer=%s";
+        body.append(String.format(format, "99_Miles_to_Empty", emailAddress, user.getSecret2FA(), "99%20Miles%20to%20Empty"));
+
+        body.append("\n\nYour backup codes are:\n");
+        for (int scratchCode : googleAuthenticatorKey.getScratchCodes()) {
+            body.append(scratchCode).append("\n");
+        }
+        msg.setText(body.toString());
+
         mailSender.send(msg);
 
         return ResponseEntity.ok("Email sent");
@@ -115,10 +139,18 @@ public class AuthController {
 
     @PostMapping(value = "/signin", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public ResponseEntity<?> authenticateUser(@Valid LoginRequest loginRequest) {
+        // Check to see if the user requires two factor authentication.
+        CustomUserDetails userDetails =
+                (CustomUserDetails) userDetailsManager.loadUserByUsername(loginRequest.getUsername());
+        if (userDetails.isUsing2FA() && loginRequest.getVerificationCode().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("2-factor authentication is required for login");
+        }
+
         Authentication authentication = authenticationProvider.authenticate(
-                new UsernamePasswordAuthenticationToken(
+                new TOTPAuthenticationToken(
                         loginRequest.getUsername(),
-                        loginRequest.getPassword()
+                        loginRequest.getPassword(),
+                        loginRequest.getVerificationCode()
                 )
         );
 
@@ -128,7 +160,7 @@ public class AuthController {
             String jwt = tokenProvider.generateToken(authentication);
             return ResponseEntity.ok(new JwtAuthenticationResponse(jwt));
         } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Username or password is incorrect");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credentials are incorrect");
         }
     }
 }
