@@ -69,7 +69,7 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
                     if (isVerificationTokenValid) {
                         Collection<? extends GrantedAuthority> grantedAuthorities = userDetails.getAuthorities();
                         result = new UsernamePasswordAuthenticationToken(userDetails, password, grantedAuthorities);
-                        logger.warn("Successful 2-factor auth login for user '{}' from {}", name,
+                        logger.info("Successful 2-factor auth login for user '{}' from {}", name,
                                 request.getRemoteAddr());
                     } else {
                         logger.warn("Failed 2-factor login for user '{}' from {}", name, request.getRemoteAddr());

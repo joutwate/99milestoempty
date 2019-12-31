@@ -75,6 +75,8 @@ public class AuthController {
         // Create a TOTP secret that can be used for two-factor authentication.
         GoogleAuthenticatorKey googleAuthenticatorKey = googleAuthenticator.createCredentials();
         user.setSecret2FA(googleAuthenticatorKey.getKey());
+        // Default the user to using 2-factor auth.
+        user.setUsing2FA(true);
 
         // Create the disabled user.
         userDetailsManager.createUser(details);
@@ -93,14 +95,9 @@ public class AuthController {
         body.append("Hello World \n Spring Boot Email.\n Please verify your account by visiting " +
                 "/api/auth/verifyRegistration/").append(registrationToken.getToken());
         body.append("\n\nYour two factor authentication secret is: ").append(user.getSecret2FA());
-        body.append("\nYou can also scan this QR code into Google Authenticator\n");
+        body.append("\n\nYou can also scan this QR code into Google Authenticator\n");
         String format = "https://www.google.com/chart?chs=200x200&cht=qr&chl=otpauth://totp/%s:%s?secret=%s&issuer=%s";
         body.append(String.format(format, "99_Miles_to_Empty", emailAddress, user.getSecret2FA(), "99%20Miles%20to%20Empty"));
-
-        body.append("\n\nYour backup codes are:\n");
-        for (int scratchCode : googleAuthenticatorKey.getScratchCodes()) {
-            body.append(scratchCode).append("\n");
-        }
         msg.setText(body.toString());
 
         mailSender.send(msg);

@@ -16,15 +16,18 @@ public class TOTPAuthenticationToken extends UsernamePasswordAuthenticationToken
     public TOTPAuthenticationToken(Object principal, Object credentials, String oneTimePassword) {
         super(principal, credentials);
 
-        // Convert the verification
-        try {
-            this.oneTimePassword = Integer.parseInt(oneTimePassword.replaceAll("\\s+", ""));
-        } catch (NumberFormatException e) {
-            logger.error("Unable to parse 2-factor TOTP verification value to an integer as expected");
+        // Convert the one time password string to an integer. We only support one time password formats that include
+        // spaces.
+        if (oneTimePassword != null) {
+            try {
+                this.oneTimePassword = Integer.parseInt(oneTimePassword.replaceAll("\\s+", ""));
+            } catch (NumberFormatException e) {
+                logger.error("Unable to parse 2-factor TOTP verification value to an integer as expected");
+            }
         }
     }
 
-    public Integer getOneTimePassword() {
+    Integer getOneTimePassword() {
         return oneTimePassword;
     }
 
