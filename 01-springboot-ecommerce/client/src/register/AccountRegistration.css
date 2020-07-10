@@ -1,0 +1,15 @@
+@media all and (min-width: 800px) {
+    .AccountRegistration {
+        padding: 60px 0;
+    }
+
+    .AccountRegistration form {
+        margin: 0 auto;
+        max-width: 600px;
+    }
+}
+
+.error-message {
+    color: red;
+    align-content: center;
+}

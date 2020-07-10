@@ -1,0 +1,21 @@
+.loading {
+    height: 100vh;
+}
+
+.loading div {
+    height: 100vh;
+    text-align: center;
+    justify-content: center;
+    align-content: center;
+}
+
+.indent {
+    display: inline-block;
+    margin-left: 10%;
+    padding-left: 10%;
+    padding-right: 10%;
+}
+
+.indent-border {
+    border-style: solid;
+}
