@@ -1,6 +1,6 @@
 package com.nnmilestoempty.config.security;
 
-import com.nnmilestoempty.security.CustomUserDetailsManager;
+import com.nnmilestoempty.base.auth.CustomUserDetailsManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

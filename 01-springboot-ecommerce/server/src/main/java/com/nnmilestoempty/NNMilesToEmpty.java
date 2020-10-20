@@ -9,9 +9,11 @@ import org.apache.http.ssl.SSLContexts;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.Resource;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
@@ -29,6 +31,8 @@ import javax.net.ssl.SSLContext;
 
 @SpringBootApplication
 @EnableSwagger2
+@EnableJpaRepositories(basePackages = {"com.nnmilestoempty.base"})
+@EntityScan(basePackages = {"com.nnmilestoempty.base"})
 public class NNMilesToEmpty {
     @Value("${server.ssl.trust-store-password}")
     private String trustStorePassword;

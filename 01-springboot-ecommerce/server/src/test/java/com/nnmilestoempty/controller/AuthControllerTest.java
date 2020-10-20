@@ -1,10 +1,10 @@
 package com.nnmilestoempty.controller;
 
 import com.nnmilestoempty.UserUtils;
-import com.nnmilestoempty.model.dao.auth.RegistrationToken;
-import com.nnmilestoempty.model.dao.auth.User;
-import com.nnmilestoempty.repository.auth.RegistrationKeyRepository;
-import com.nnmilestoempty.repository.auth.UserRepository;
+import com.nnmilestoempty.base.model.dao.auth.RegistrationToken;
+import com.nnmilestoempty.base.model.dao.auth.User;
+import com.nnmilestoempty.base.repository.auth.RegistrationKeyRepository;
+import com.nnmilestoempty.base.repository.auth.UserRepository;
 import com.warrenstrange.googleauth.GoogleAuthenticator;
 import org.junit.Test;
 import org.junit.runner.RunWith;

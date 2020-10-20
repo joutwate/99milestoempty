@@ -2,11 +2,11 @@ package com.nnmilestoempty;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nnmilestoempty.model.dao.auth.Role;
-import com.nnmilestoempty.model.dao.auth.User;
-import com.nnmilestoempty.model.request.LoginRequest;
-import com.nnmilestoempty.repository.auth.UserRepository;
-import com.nnmilestoempty.security.CustomUserDetails;
+import com.nnmilestoempty.base.model.dao.auth.Role;
+import com.nnmilestoempty.base.model.dao.auth.User;
+import com.nnmilestoempty.base.model.request.LoginRequest;
+import com.nnmilestoempty.base.repository.auth.UserRepository;
+import com.nnmilestoempty.base.auth.CustomUserDetails;
 import com.warrenstrange.googleauth.GoogleAuthenticator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

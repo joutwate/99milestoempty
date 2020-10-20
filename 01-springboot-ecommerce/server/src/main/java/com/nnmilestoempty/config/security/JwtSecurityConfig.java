@@ -1,11 +1,11 @@
 package com.nnmilestoempty.config.security;
 
 import com.google.common.collect.ImmutableList;
-import com.nnmilestoempty.model.dao.auth.Role;
-import com.nnmilestoempty.model.dao.auth.User;
-import com.nnmilestoempty.repository.auth.UserRepository;
-import com.nnmilestoempty.security.CustomUserDetails;
-import com.nnmilestoempty.security.CustomUserDetailsManager;
+import com.nnmilestoempty.base.model.dao.auth.Role;
+import com.nnmilestoempty.base.model.dao.auth.User;
+import com.nnmilestoempty.base.repository.auth.UserRepository;
+import com.nnmilestoempty.base.auth.CustomUserDetails;
+import com.nnmilestoempty.base.auth.CustomUserDetailsManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;

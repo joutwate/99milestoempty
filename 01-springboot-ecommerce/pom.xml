@@ -12,6 +12,7 @@
     <description>Code for tutorials on 99milestoempty.com</description>
 
     <modules>
+        <module>base</module>
         <module>server</module>
     </modules>
 
