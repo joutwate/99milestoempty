@@ -1,11 +1,12 @@
 package com.nnmilestoempty.config.security;
 
 import com.google.common.collect.ImmutableList;
+import com.nnmilestoempty.base.auth.CustomUserDetails;
+import com.nnmilestoempty.base.auth.CustomUserDetailsManager;
+import com.nnmilestoempty.base.auth.JwtAuthenticationFilter;
 import com.nnmilestoempty.base.model.dao.auth.Role;
 import com.nnmilestoempty.base.model.dao.auth.User;
 import com.nnmilestoempty.base.repository.auth.UserRepository;
-import com.nnmilestoempty.base.auth.CustomUserDetails;
-import com.nnmilestoempty.base.auth.CustomUserDetailsManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
@@ -30,11 +31,11 @@ import java.util.Collections;
  */
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-public class JwtSecurityConfig extends WebSecurityConfigurerAdapter {
+public class NNMilesToEmptyConfig extends WebSecurityConfigurerAdapter {
 
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
-    public JwtSecurityConfig(UserRepository userRepository) {
+    public NNMilesToEmptyConfig(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 

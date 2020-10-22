@@ -1,5 +1,6 @@
-package com.nnmilestoempty.controller;
+package com.nnmilestoempty.base.controller;
 
+import com.nnmilestoempty.base.auth.*;
 import com.nnmilestoempty.base.model.dao.auth.RegistrationToken;
 import com.nnmilestoempty.base.model.dao.auth.Role;
 import com.nnmilestoempty.base.model.dao.auth.User;
@@ -10,11 +11,6 @@ import com.nnmilestoempty.base.model.response.JwtAuthenticationResponse;
 import com.nnmilestoempty.base.repository.auth.RegistrationKeyRepository;
 import com.nnmilestoempty.base.service.EmailService;
 import com.nnmilestoempty.base.utils.ResponseUtils;
-import com.nnmilestoempty.config.security.JwtTokenProvider;
-import com.nnmilestoempty.base.auth.CustomAuthenticationProvider;
-import com.nnmilestoempty.base.auth.CustomUserDetails;
-import com.nnmilestoempty.base.auth.CustomUserDetailsManager;
-import com.nnmilestoempty.base.auth.TOTPAuthenticationToken;
 import com.warrenstrange.googleauth.GoogleAuthenticator;
 import com.warrenstrange.googleauth.GoogleAuthenticatorKey;
 import org.slf4j.Logger;
@@ -29,12 +25,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
